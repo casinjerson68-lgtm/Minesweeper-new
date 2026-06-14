@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import PhotoImage
+from PIL import Image, ImageTk
 import subprocess
 import os
 import sys
@@ -9,21 +10,43 @@ tree.configure(bg='white')
 tree.geometry("1280x720")
 tree.title("Minesweeper")
 tree.resizable(False, False)
-image_path = PhotoImage(file=r"C:\Users\Diane\Downloads\minesweeper-screen-saver-v0-x8pud88xawsa1.gif")
+icon = PhotoImage(file=r"C:\Users\Diane\OneDrive\Desktop\minesweeper try\Minesweeper_flag.svg.png")
+tree.iconphoto(True, icon)
+image_path = PhotoImage(file=r"C:\Users\Diane\Downloads\Untitled design.png")
+image2_path = PhotoImage(file=r"C:\Users\Diane\Downloads\minesweeper-screen-saver-v0-x8pud88xawsa1.gif")
 
 bg_image = tk.Label(tree, image=image_path)
 bg_image.place(relwidth=1, relheight=1)
 
-title_frame = tk.Frame(tree)
-title_frame.pack(fill='x', pady=(20, 10))
-title_frame.place(x=640, y=210, anchor='center')
+
+
+main_container = tk.Frame(tree, bg="#b9b9b9", relief=tk.RAISED, bd=8)
+#main_container.pack(fill=tk.BOTH, expand=True, padx=400, pady=100, anchor='center')
+main_container.configure(width=700, height=500)
+main_container.place(x=620,y=100)
+
+title_frame = tk.Frame(main_container, relief=tk.SUNKEN, bd=8)
+title_frame.pack(fill=tk.X, padx=5, pady=10)
+
+button_frame = tk.Frame(main_container, bg="#b9b9b9", relief=tk.GROOVE, bd=10)
+button_frame.pack(fill=tk.BOTH, expand=True, padx=3, pady=2)
+
+bg_buttonframe = tk.Label(button_frame, image=image2_path)
+bg_buttonframe.place(relheight=1, relwidth=1)
+
+button_inner_play = tk.Frame(button_frame, bg="#b9b9b9", relief=tk.SUNKEN, bd=5)
+button_inner_play.pack(fill=tk.BOTH, expand=True, padx=80, pady=(100, 15))
+
+button_inner_instructions = tk.Frame(button_frame, bg="#b9b9b9", relief=tk.SUNKEN, bd=5)
+button_inner_instructions.pack(fill=tk.BOTH, expand=True, padx=80, pady=(15, 120))
+
 title_label = tk.Label(title_frame, 
     text='Minesweeper Game',
-    bg='gray20',
-    fg='white',
-    font=('System', 50, 'bold')
+    bg="#949393",
+    fg='gray20',
+    font=('System', 28, 'bold')
     )
-title_label.pack()
+title_label.pack(fill=tk.X)
 
 def create_rounded_rect(canvas, x1, y1, x2, y2, radius=10, **kwargs):
     points = [
@@ -44,7 +67,7 @@ def create_rounded_rect(canvas, x1, y1, x2, y2, radius=10, **kwargs):
 
 class RoundedButton(tk.Canvas):
     def __init__(self, parent, text, width, height, radius=20, bg='#4CAF50', fg='white', hover_bg=None, command=None, font=('System', 14, 'bold')):
-        super().__init__(parent, width=width, height=height, bg=parent['bg'], highlightthickness=0, bd=0, relief='sunken')
+        super().__init__(parent, width=width, height=height, bg=parent['bg'], highlightthickness=0, bd=1, relief=tk.RAISED)
         self.command = command
         self.bg = bg
         self.hover_bg = hover_bg or bg
@@ -70,7 +93,21 @@ class RoundedButton(tk.Canvas):
         self.itemconfig(self.rect, fill=self.bg, outline=self.bg)
 
 
+def start_easy_game():
+    difficulty_window.destroy()
+    subprocess.Popen([sys.executable, os.path.join(os.path.dirname(__file__), 'Emain.py')])
+    tree.destroy()
+def start_medium_game():
+    difficulty_window.destroy()
+    subprocess.Popen([sys.executable, os.path.join(os.path.dirname(__file__), 'Mmain.py')])
+    tree.destroy()
+def start_hard_game():
+    difficulty_window.destroy()
+    subprocess.Popen([sys.executable, os.path.join(os.path.dirname(__file__), 'Hmain.py')])
+    tree.destroy()
+
 def show_difficulties():
+    global difficulty_window
     difficulty_window = tk.Toplevel(tree)
     difficulty_window.configure(bg='gray20')
     difficulty_window.title("Select Difficulty")
@@ -105,7 +142,8 @@ def show_difficulties():
         bg='#4CAF50',
         hover_bg="#99C59B",
         fg='white',
-        font=('Arial', 16, 'bold')
+        font=('Arial', 16, 'bold'),
+        command=start_easy_game
     )
     easy_button.pack(pady=10)
 
@@ -119,7 +157,8 @@ def show_difficulties():
         bg='#FF9800',
         hover_bg="#FFB74D",
         fg='white',
-        font=('Arial', 16, 'bold')
+        font=('Arial', 16, 'bold'),
+        command=start_medium_game
     )
     medium_button.pack(pady=10)
 
@@ -133,7 +172,8 @@ def show_difficulties():
         bg='#F44336',
         hover_bg="#EF5350",
         fg='white',
-        font=('Arial', 16, 'bold')
+        font=('Arial', 16, 'bold'),
+        command=start_hard_game
     )
     hard_button.pack(pady=10)
 
@@ -215,25 +255,24 @@ Tips:
     
 
 play_button = RoundedButton(
-    tree,
+    button_inner_play,
     text='Play',
-    width=260,
-    height=70,
+    width=330,
+    height=60,
     radius=25,
-    bg='#4CAF50',
+    bg="#3E9742",
     hover_bg="#99C59B",
     fg='white',
     font=('Arial', 20, 'bold'),
     command=play_game
 )
-play_button.pack()
-play_button.place(x=640, y=360, anchor='center')
+play_button.pack(pady=(0,0))
 
 how_to_play_button = RoundedButton(
-    tree,
+    button_inner_instructions,
     text='How to Play',
-    width=260,
-    height=55,
+    width=330,
+    height=60,
     radius=25,
     bg="#33353D",
     hover_bg="#616368",
@@ -241,8 +280,7 @@ how_to_play_button = RoundedButton(
     font=('Arial', 14),
     command=show_instructions
 )
-how_to_play_button.pack()
-how_to_play_button.place(x=640, y=440, anchor='center')
+how_to_play_button.pack(pady=(0,0))
 
 
 tree.mainloop()

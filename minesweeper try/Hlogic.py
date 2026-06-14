@@ -10,7 +10,7 @@ import subprocess
 
 class Cell:
     all = []
-    cell_count= settings.CELL_COUNT
+    cell_count= settings.HARD_CELL_COUNT
     cell_count_label_object = None
     timer_label_object = None
     timer_started = False
@@ -30,10 +30,10 @@ class Cell:
     def Create_btn_object(self, location):
         btn = Button(
             location,
-            relief= 'raised',
-            bd=5,
+            relief='raised',
             width=12,
             height=4,
+            bd=5,
             bg='#9c9c9c'
         )
         btn.bind('<Button-1>', self.left_click_actions) # Left Click
@@ -54,7 +54,7 @@ class Cell:
         Cell.cell_count_label_object = lbl
 
     def left_click_actions(self, event):
-
+        # Check if cell is flagged - if so, prevent left click
         if self.is_mine_candidate:
             return
         
@@ -71,10 +71,9 @@ class Cell:
                     cell_obj.show_cell()
             self.show_cell()
             # If Mines count is equal to the cells left count player won
-            if Cell.cell_count == settings.MINES_COUNT:
+            if Cell.cell_count == settings.HMINES_COUNT:
                 Cell.stop_timer()
                 Cell.show_win_window(Cell.root_window, self.restart_game)
-            
         # Cancel left and right click events if the cell is already opened
         self.cell_btn_object.unbind('<Button-1>')
         self.cell_btn_object.unbind('<Button-3>')
@@ -114,20 +113,20 @@ class Cell:
     def show_cell(self):
         if not self.is_opened:
             Cell.cell_count -= 1
-            self.cell_btn_object.configure(text=self.surrounded_cell_mines_length, relief="sunken")
+            self.cell_btn_object.configure(text=self.surrounded_cell_mines_length, relief="raised")
             # Replace the text of cell count label with the newer count
             if Cell.cell_count_label_object:
                 Cell.cell_count_label_object.configure(
                     text=f"{Cell.cell_count}"
             )
-            # Change to lighter color and sunken relief when revealed
-            self.cell_btn_object.configure(
-                bg="#b9b9b9",
-                relief='raised'
+        # Change to lighter color and sunken relief when revealed
+        self.cell_btn_object.configure(
+            bg="#b9b9b9",
+            relief='raised'
             )
                
-            # Mark the cell as opened (Use this as the last line of this method)
-            self.is_opened = True
+            # Mark the cell as opened
+        self.is_opened = True
             
 
     def show_mine(self):
@@ -142,7 +141,7 @@ class Cell:
             self.reveal_all_mines()
 
             # delay before popup (gives "animation feel")
-            self.cell_btn_object.after(600, self.game_over_popup)
+            self.cell_btn_object.after(1500, self.game_over_popup)
         
     def reveal_all_mines(self):
 
@@ -152,7 +151,7 @@ class Cell:
 
             if cell.is_mine:
                 
-                delay += 50
+                delay += 35
 
                 cell.cell_btn_object.after(
                     delay,
@@ -167,8 +166,6 @@ class Cell:
             
     def game_over_popup(self):
         Cell.show_game_over_window(Cell.root_window, self.restart_game)
-    
-
          
     def restart_game(self):
         
@@ -187,7 +184,7 @@ class Cell:
             # re-randomize mines AFTER reset
             Cell.randomize_mines()
 
-            Cell.cell_count = settings.CELL_COUNT
+            Cell.cell_count = settings.HARD_CELL_COUNT
             Cell.randomize_mines()
 
         for cell in Cell.all:
@@ -241,18 +238,18 @@ class Cell:
         if not self.is_opened:
 
             if not self.is_mine_candidate:
-
+                # Flag the cell - disable left click
                 self.cell_btn_object.configure(
-                text="🚩",
-                fg="red"
+                    text="🚩",
+                    fg="red",
                 )
                 self.is_mine_candidate = True
 
             else:
-
+                # Unflag the cell - enable left click
                 self.cell_btn_object.configure(
-                text="",
-                fg="black"
+                    text="",
+                    fg="black",
                 )
                 self.is_mine_candidate = False
     
@@ -384,7 +381,6 @@ class Cell:
     
     @staticmethod
     def show_win_window(parent_root, restart_callback):
-
         """Display a custom win window with GIF, message, and buttons"""
         win_window = Toplevel(parent_root)
         win_window.title("Victory!")
@@ -403,7 +399,7 @@ class Cell:
         x = parent_x + (parent_width - win_width) // 2
         y = parent_y + (parent_height - win_height) // 2
         win_window.geometry(f"400x500+{x}+{y}")
-
+        
         # Congratulations message
         message_label = Label(
             win_window,
@@ -495,7 +491,7 @@ class Cell:
         for cell in Cell.all:
             cell.is_mine = False
 
-        picked_cells = random.sample(Cell.all, settings.MINES_COUNT)
+        picked_cells = random.sample(Cell.all, settings.HMINES_COUNT)
         for cell in picked_cells:
             cell.is_mine = True
 
